@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote, urljoin
 import urllib3
+import numpy as np
 import json
 
 base_url = "https://it-events.com/"
@@ -36,13 +37,25 @@ def get_pages_link(html, url_list=[]):  # get the number of pages, which will be
             return url_list
 
 
+def get_pages_info(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    event_name = soup.find('h1', class_='event-header__title').text
+    return event_name
+
 
 html = get_html(base_url)
 paper = get_pages_link(html.content)
 paper.insert(0, base_url)
-print(paper)
+events = np.array([])
 for link in paper:
-    print(link + '\n')
     html = get_html(link)
-    print(get_links(html.content))
-    print('\n')
+    events = np.append(events, get_links(html.content))
+
+info = []
+for event in events:
+    html = get_html(event).content
+    soup = BeautifulSoup(html, 'html.parser')
+    event_info = []
+    event_info.append(get_pages_info(html))
+    info.append(event_info)
+print(info)
