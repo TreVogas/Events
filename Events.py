@@ -1,9 +1,21 @@
+import time
+
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote, urljoin
 import urllib3
 import numpy as np
 import json
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+
+cred = credentials.Certificate(
+    r'C:\Users\Владимир\Desktop\uirebase\projects-d0f06-firebase-adminsdk-36fer-ef3ed002bd.json')
+default_app = firebase_admin.initialize_app(cred,
+                                            {'databaseURL': 'https://projects-d0f06-default-rtdb.firebaseio.com/'})
+
+ref = db.reference("/")
 
 base_url = "https://it-events.com/"
 
@@ -17,7 +29,7 @@ def get_html(url, params=None):
     return r
 
 
-def get_links(html):  # get links on the vacancy
+def get_links(html):  # get links on the events
     soup = BeautifulSoup(html, 'html.parser')
     links = soup.find_all('a', class_='event-list-item__title')
     all_links = []
@@ -43,6 +55,46 @@ def get_pages_info(html):
     return event_name
 
 
+def get_city(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    event_city = soup.find('a',
+                           class_='event-header__line event-header__line_icon event-header__line_icon_location')
+    if event_city == None:
+        event_city == 0
+        return event_city
+    event_city = soup.find('a',
+                           class_='event-header__line event-header__line_icon event-header__line_icon_location').text
+    return event_city
+
+def get_type_of_event(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    event_type = soup.find('div', class_='event-header__line event-header__line_icon event-header__line_icon_online')
+    if event_type == None:
+        event_type == 0
+        return event_type
+    event_type = soup.find('div', class_='event-header__line event-header__line_icon event-header__line_icon_online').text
+    return event_type
+
+
+def get_price(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    event_price = soup.find('div', class_='event-header__line event-header__line_icon event-header__line_icon_price').text
+    return event_price
+
+
+def get_day(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    event_day = soup.find('div', class_='event-header__line event-header__line_bold event-header__line_icon').text
+    return event_day
+
+
+def get_reg(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    event_reg = soup.find('button', class_='button').text
+    return event_reg
+
+
+
 html = get_html(base_url)
 paper = get_pages_link(html.content)
 paper.insert(0, base_url)
@@ -51,11 +103,31 @@ for link in paper:
     html = get_html(link)
     events = np.append(events, get_links(html.content))
 
-info = []
+info = {}
+number = 0
 for event in events:
     html = get_html(event).content
     soup = BeautifulSoup(html, 'html.parser')
-    event_info = []
-    event_info.append(get_pages_info(html))
-    info.append(event_info)
+    event_info = {}
+    event_info = get_pages_info(html)
+    city = get_city(html)
+    price = get_price(html)
+    typo = get_type_of_event(html)
+    day = get_day(html)
+    reg = get_reg(html)
+    info[number] = [event_info, event, city, typo, price, day, reg]
+    number = number + 1
+
 print(info)
+s = json.dumps(info, ensure_ascii=False)
+print(s)
+
+
+with open('a.json', 'wb') as file_end:  # wb - write bytes
+    file_end.write(bytes(s, encoding='utf-16'))
+    firebase_json = ref.get()
+    print(firebase_json)
+    print(file_end)
+    ref.update(info)
+print("\U0001f637")
+time.sleep(180)
