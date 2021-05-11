@@ -1,5 +1,4 @@
 import time
-
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote, urljoin
@@ -9,14 +8,10 @@ import json
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
+from datetime import datetime
+import time
 
-cred = credentials.Certificate(
-    r'C:\Users\Владимир\Desktop\uirebase\projects-d0f06-firebase-adminsdk-36fer-ef3ed002bd.json')
-default_app = firebase_admin.initialize_app(cred,
-                                            {'databaseURL': 'https://projects-d0f06-default-rtdb.firebaseio.com/'})
-
-ref = db.reference("/")
-
+start_time = datetime.now()
 base_url = "https://it-events.com/"
 
 HEADERS = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
@@ -66,19 +61,22 @@ def get_city(html):
                            class_='event-header__line event-header__line_icon event-header__line_icon_location').text
     return event_city
 
+
 def get_type_of_event(html):
     soup = BeautifulSoup(html, 'html.parser')
     event_type = soup.find('div', class_='event-header__line event-header__line_icon event-header__line_icon_online')
     if event_type == None:
         event_type == 0
         return event_type
-    event_type = soup.find('div', class_='event-header__line event-header__line_icon event-header__line_icon_online').text
+    event_type = soup.find('div',
+                           class_='event-header__line event-header__line_icon event-header__line_icon_online').text
     return event_type
 
 
 def get_price(html):
     soup = BeautifulSoup(html, 'html.parser')
-    event_price = soup.find('div', class_='event-header__line event-header__line_icon event-header__line_icon_price').text
+    event_price = soup.find('div',
+                            class_='event-header__line event-header__line_icon event-header__line_icon_price').text
     return event_price
 
 
@@ -92,7 +90,6 @@ def get_reg(html):
     soup = BeautifulSoup(html, 'html.parser')
     event_reg = soup.find('button', class_='button').text
     return event_reg
-
 
 
 html = get_html(base_url)
@@ -123,11 +120,15 @@ s = json.dumps(info, ensure_ascii=False)
 print(s)
 
 
+
 with open('a.json', 'wb') as file_end:  # wb - write bytes
     file_end.write(bytes(s, encoding='utf-16'))
-    firebase_json = ref.get()
-    print(firebase_json)
-    print(file_end)
-    ref.update(info)
-print("\U0001f637")
-time.sleep(180)
+cred = credentials.Certificate(
+        r'C:\Users\Владимир\Desktop\uirebase\projects-d0f06-firebase-adminsdk-36fer-ef3ed002bd.json')
+default_app = firebase_admin.initialize_app(cred,
+                                                {'databaseURL': 'https://projects-d0f06-default-rtdb.firebaseio.com/'})
+
+ref = db.reference("/")
+firebase_json = ref.get()
+ref.update(info)
+print(datetime.now() - start_time)

@@ -8,6 +8,9 @@ cffi==1.14.5
 chardet==4.0.0
 cryptography==3.4.6
 dicttoxml==1.7.4
+django == 2.1.2
+django-heroku == 0.3.1
+gunicorn == 19.9.0
 firebase==3.0.1
 firebase-admin==4.5.3
 google-api-core==1.26.3
@@ -49,3 +52,8 @@ urllib3==1.26.4
 wheel==0.36.2
 win-inet-pton==1.1.0
 wincertstore==0.2
+numpy~=1.19.2
+bs4~=0.0.1
+redis~=3.2.100
+rq~=1.8.0
+worker~==2018.4.1
