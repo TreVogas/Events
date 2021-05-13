@@ -54,6 +54,6 @@ win-inet-pton==1.1.0
 wincertstore==0.2
 numpy~=1.19.2
 bs4~=0.0.1
-redis~=3.2.100
+#redis~=3.2.100
 rq~=1.8.0
 #worker~==2018.4.1
